@@ -1,0 +1,707 @@
+import { useMemo } from 'react';
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
+import Box from '../Box';
+import * as Perlin from '../Perlin/index.js';
+// import Curves from '../Curves/index.js';
+
+const EffectComposer = window.THREE.EffectComposer;
+const AfterimagePass = window.THREE.AfterimagePass;
+const RenderPass = window.THREE.RenderPass;
+
+const SceneManager = (canvas) => {
+
+    const clock = new THREE.Clock();
+
+    const screenDimensions = {
+        width: canvas.width,
+        height: canvas.height
+    }
+
+    const pipeSpline = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(0, 10, -10), new THREE.Vector3(10, 0, -10),
+        new THREE.Vector3(20, 0, 0), new THREE.Vector3(30, 0, 10),
+        new THREE.Vector3(30, 0, 20), new THREE.Vector3(20, 0, 30),
+        new THREE.Vector3(10, 0, 30), new THREE.Vector3(0, 0, 30),
+        new THREE.Vector3(-10, 10, 30), new THREE.Vector3(-10, 20, 30),
+        new THREE.Vector3(0, 30, 30), new THREE.Vector3(10, 30, 30),
+        new THREE.Vector3(20, 30, 15), new THREE.Vector3(10, 30, 10),
+        new THREE.Vector3(0, 30, 10), new THREE.Vector3(-10, 20, 10),
+        new THREE.Vector3(-10, 10, 10), new THREE.Vector3(0, 0, 10),
+        new THREE.Vector3(10, -10, 10), new THREE.Vector3(20, -15, 10),
+        new THREE.Vector3(30, -15, 10), new THREE.Vector3(40, -15, 10),
+        new THREE.Vector3(50, -15, 10), new THREE.Vector3(60, 0, 10),
+        new THREE.Vector3(70, 0, 0), new THREE.Vector3(80, 0, 0),
+        new THREE.Vector3(90, 0, 0), new THREE.Vector3(100, 0, 0)
+    ]);
+
+    // spline stuff
+    var sampleClosedSpline = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(0, -40, -40),
+        new THREE.Vector3(0, 40, -40),
+        new THREE.Vector3(0, 140, -40),
+        new THREE.Vector3(0, 40, 40),
+        new THREE.Vector3(0, -40, 40)
+    ]);
+    sampleClosedSpline.curveType = 'catmullrom';
+    sampleClosedSpline.closed = true;
+
+
+    let camera, parent, tubeGeometry, splineMesh, splineCamera, cameraHelper, cameraEye;
+
+    const params = {
+        spline: sampleClosedSpline,
+        scale: 0.9,
+        extrusionSegments: 100,
+        radiusSegments: 5,
+        closed: true,
+        animationView: false,
+        lookAhead: true,
+        cameraHelper: false,
+    };
+
+
+    const scene = buildScene();
+    const renderer = buildRender(screenDimensions);
+    camera = buildCamera(params.animationView, screenDimensions);
+    const sceneSubjects = createSceneSubjects(scene);
+
+    window.addEventListener('resize', onWindowResize, false);
+    // const composer = new EffectComposer( renderer );
+    // composer.addPass( new RenderPass( scene, camera ) );
+    // const afterimagePass = new AfterimagePass();
+    // composer.addPass( afterimagePass );
+
+    function GeneralLights(scene) {
+        var lights = [];
+        lights[0] = new THREE.PointLight(0xffffff, 1, 0);
+        lights[1] = new THREE.PointLight(0xffffff, 1, 0);
+        lights[2] = new THREE.PointLight(0xffffff, 1, 0);
+        lights[0].position.set(0, 200, 0);
+        lights[1].position.set(100, 200, 100);
+        lights[2].position.set(-100, -200, -100);
+        // scene.add( lights[ 0 ] );
+        // scene.add( lights[ 1 ] );
+        // scene.add( lights[ 2 ] );
+        this.update = function(time) {
+            // light.intensity = (Math.sin(time)+1.5)/1.5;
+            // light.color.setHSL( Math.sin(time), 0.5, 0.5 );
+        }
+    }
+
+    function SceneSubject(scene) {
+        var headOBJLoader = new OBJLoader().setPath('./models/head_001/');
+        var damaGLTFLoader = new GLTFLoader().setPath('./models/dama_de_elche/');
+        // create image textures
+        const tornCloudTexture = new THREE.TextureLoader().load('images/IMG_5412.PNG');
+        tornCloudTexture.wrapS = THREE.RepeatWrapping;
+        tornCloudTexture.wrapT = THREE.RepeatWrapping;
+        tornCloudTexture.repeat.set(100, 100);
+        const checkersTexture = new THREE.TextureLoader().load('images/checkers2.jpg');
+        const roseTexture = new THREE.TextureLoader().load('images/rose1.jpg');
+        const peggyTexture = new THREE.TextureLoader().load('images/peggy.jpg');
+        const coreyTexture = new THREE.TextureLoader().load('images/corey.jpg');
+        const grassTexture = new THREE.TextureLoader().load('images/album-art-grass.jpg');
+        const stripesTexture = new THREE.TextureLoader().load('images/stripes.jpg');
+        stripesTexture.wrapS = THREE.RepeatWrapping;
+        stripesTexture.wrapT = THREE.RepeatWrapping;
+        stripesTexture.repeat.set(1, 1);
+
+        // create video texture
+        const video = document.getElementById('video');
+        const videoTexture = new THREE.VideoTexture(video);
+        video.play();
+
+        const audio = document.getElementById('audio');
+        audio.play();
+
+        const documentTime = document.getElementById('time');
+
+        // create materials
+        const tornCloudMaterial = new THREE.MeshBasicMaterial({ map: tornCloudTexture });
+        const whiteMaterial = new THREE.MeshBasicMaterial({ color: "white" });
+        const checkersMaterial = new THREE.MeshBasicMaterial({ map: checkersTexture });
+        const roseMaterial = new THREE.MeshBasicMaterial({ map: roseTexture });
+        const videoMaterial = new THREE.MeshBasicMaterial({ map: videoTexture });
+        const peggyMaterial = new THREE.MeshBasicMaterial({ map: peggyTexture });
+        const coreyMaterial = new THREE.MeshBasicMaterial({ map: coreyTexture });
+        const grassMaterial = new THREE.MeshBasicMaterial({ map: grassTexture });
+        const stripesMaterial = new THREE.MeshBasicMaterial({ map: stripesTexture });
+
+        var binormal = new THREE.Vector3();
+        var normal = new THREE.Vector3();
+
+        const extrudePath = pipeSpline;
+        tubeGeometry = new THREE.TubeBufferGeometry(extrudePath, params.extrusionSegments, 2, params.radiusSegments, params.closed);
+        const tubeMaterial = new THREE.MeshLambertMaterial({ color: 0xff00ff });
+        const wireframeMaterial = new THREE.MeshBasicMaterial({ color: 0xff00ff, opacity: 0.9, wireframe: false, transparent: false });
+        splineMesh = new THREE.Mesh(tubeGeometry, videoMaterial);
+        const wireframe = new THREE.Mesh(tubeGeometry, videoMaterial);
+        splineMesh.add(wireframeMaterial);
+        params.animationView && parent.add(splineMesh);
+        params.animationView && animateCameraAlongSpline(splineCamera, tubeGeometry, binormal, normal)
+
+        // end spline stuff
+
+        // create variables
+        let radius = 5;
+        let tube = 1;
+        let tubularSegments = 100;
+        let radialSegments = 20;
+        let p = 4;
+        let q = 1;
+
+        let boxSize = 7;
+        let tornCloudSize = 20;
+        let videoSize = 20;
+        let videoSize2 = videoSize * 3;
+        // create objects
+        const boxGeometry = new THREE.BoxGeometry(boxSize, boxSize, boxSize);
+        const videoBoxGeometry = new THREE.BoxGeometry(10, 10, 10);
+        const roseCylinderGeometry = new THREE.CylinderGeometry(2, 2, 8, 30, 5);
+        const torusGeometry = new THREE.TorusGeometry(radius, tube, tubularSegments, radialSegments, p, 2);
+        const torusKnotGeometry = new THREE.TorusKnotGeometry(radius, tube, tubularSegments, radialSegments, p, q);
+        const tornCloudKnotGeometry = new THREE.TorusKnotGeometry(radius, tube, tubularSegments, radialSegments, p, q);
+        const planeGeometry = new THREE.PlaneGeometry(7, 7, 7);
+        const sphereGeometry = new THREE.SphereGeometry(1, 128, 128);
+
+        // create meshes
+        const videoBoxGeometryMesh = new THREE.Mesh(videoBoxGeometry, videoMaterial);
+        const whiteBoxGeometryMesh = new THREE.Mesh(boxGeometry, whiteMaterial);
+        const roseCylinderGeometryMesh = new THREE.Mesh(roseCylinderGeometry, whiteMaterial);
+        const torusGeometryMesh = new THREE.Mesh(torusGeometry, checkersMaterial);
+        const torusKnotGeometryMesh = new THREE.Mesh(torusKnotGeometry, roseMaterial);
+        const tornCloudKnotGeometryMesh = new THREE.Mesh(tornCloudKnotGeometry, tornCloudMaterial);
+        const planeGeometryMesh = new THREE.Mesh(planeGeometry, checkersMaterial);
+        const peggySphereMesh = new THREE.Mesh(sphereGeometry, peggyMaterial);
+        peggySphereMesh.scale.multiplyScalar(20);
+        const coreySphereMesh = new THREE.Mesh(sphereGeometry, coreyMaterial);
+        coreySphereMesh.scale.multiplyScalar(20);
+        let damaMesh = null;
+        let headMesh = null;
+        const group = new THREE.Group();
+        const group2 = new THREE.Group();
+        const group3 = new THREE.Group();
+
+        var sweetGeometry = new THREE.SphereGeometry(5, 32, 32);
+        var sweetMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+        var sweetSphere = new THREE.Mesh(sweetGeometry, sweetMaterial);
+
+        // add to group
+        group.add(torusKnotGeometryMesh)
+        // group.add(tubeGeometryMesh)
+        // group.add(peggySphereMesh)
+        group2.add(roseCylinderGeometryMesh)
+        group3.add(tornCloudKnotGeometryMesh)
+
+        // add group to scene
+        scene.add(group);
+        let timeNotSet = true;
+        let count = false;
+
+        // new
+        let xSize = 2;
+        let ySize = 3;
+        let zSize = 4;
+        let n = xSize * ySize * zSize;
+
+        let geometry = new THREE.BufferGeometry();
+
+        function mapTo3D(i) {
+            let z = Math.floor(i / (xSize * ySize));
+            i -= z * xSize * ySize;
+            let y = Math.floor(i / xSize);
+            let x = i % xSize;
+            return { x: x, y: y, z: z };
+        }
+
+        function mapFrom3D(x, y, z) {
+            return x + y * xSize + z * xSize * ySize;
+        }
+
+        this.update = function(time) {
+            let positions = [];
+            for (let i = 0; i < n; i++) {
+                let p = mapTo3D(i);
+                positions.push((p.x - xSize) / xSize);
+                positions.push((p.y - ySize) / ySize);
+                positions.push((p.z - zSize) / zSize);
+            }
+            let positionAttribute = new THREE.Float32BufferAttribute(positions, 3);
+            geometry.addAttribute("position", positionAttribute);
+            let indexPairs = [];
+            for (let i = 0; i < n; i++) {
+                let p = mapTo3D(i);
+                if (p.x + 1 < xSize) {
+                    indexPairs.push(i);
+                    indexPairs.push(mapFrom3D(p.x + 1, p, p.z));
+                }
+                if (p.y + 1 < ySize) {
+                    indexPairs.push(i * scale3);
+                    indexPairs.push(mapFrom3D(p.x, p.y + 1, p.z));
+                }
+                if (p.z + 1 < zSize) {
+                    indexPairs.push(i);
+                    indexPairs.push(mapFrom3D(p.x, p.y, p.z + 1));
+                }
+            }
+            geometry.setIndex(indexPairs);
+            let lines = new THREE.LineSegments(geometry, new THREE.LineBasicMaterial({ color: 0x85144b, linewidth: 100 }));
+
+            if (params.animationView) {
+                parent.add(splineMesh);
+                scene.add(parent);
+                buildCamera(params.animationView, screenDimensions);
+                console.log(camera)
+                animateCameraAlongSpline(splineCamera, tubeGeometry, binormal, normal);
+            }
+            // console.log('before', camera.position)
+            // console.log('after', camera.position)
+            // addNoise(peggySphereMesh, .03)
+            console.log(time)
+            let useTime = time + 115;
+            // let useTime = time;
+            timeNotSet && (video.currentTime = useTime.toFixed(0));
+            timeNotSet && (audio.currentTime = useTime.toFixed(0));
+            timeNotSet = false;
+            documentTime.textContent = useTime.toFixed(0);
+            let scale = Math.sin(useTime / 2) * 20;
+            let scale3 = Math.sin(useTime / 3);
+            console.log('useTime', useTime, 'scale', scale, 'scale3', scale3)
+            const timeMarker1 = 3;
+            const timeMarker2 = 7;
+            const timeMarker3 = 12;
+            const timeMarker4 = 20;
+            const timeMarker5 = 25;
+            const timeMarker6 = 36;
+            const timeMarker7 = 47;
+            const timeMarker8 = 53;
+            const timeMarker9 = 54;
+            const timeMarker10 = 68;
+            const timeMarker01 = 80;
+            const timeMarker02 = 92;
+            const timeMarker03 = 100;
+            const timeMarker04 = 106;
+            const timeMarker05 = 118;
+            const timeMarker06 = 132;
+
+            group.rotation.x = useTime * 4;
+            group.rotation.y = useTime;
+            group2.rotation.x = performance.now() / 700;
+            group2.rotation.y = performance.now() / 3000;
+
+            if (useTime > timeMarker2 && useTime < timeMarker3) {
+                group.add(whiteBoxGeometryMesh);
+            }
+
+            if (useTime > timeMarker3 && useTime < timeMarker4) {
+                camera.position.z = useTime;
+                scene.add(group2);
+                whiteBoxGeometryMesh.scale.set(0);
+                roseCylinderGeometryMesh.scale.set(1, 1, 1);
+            }
+
+            if (useTime > timeMarker4 && useTime < timeMarker5) {
+                camera.position.z = 50;
+                scene.add(group3);
+                roseCylinderGeometryMesh.material = roseMaterial;
+                torusKnotGeometryMesh.material = videoMaterial;
+                tornCloudKnotGeometryMesh.scale.set(5, 1, scale * tubularSegments, scale * radialSegments, p, q);
+            }
+
+            if (useTime > timeMarker5 && useTime < timeMarker6) {
+                torusKnotGeometryMesh.material = roseMaterial;
+                roseCylinderGeometryMesh.material = videoMaterial;
+                roseCylinderGeometryMesh.scale.set(5, 5, 5, 5, 5)
+                camera.position.z = 50;
+                camera.position.x = scale;
+                camera.position.y = scale;
+                scene.add(group3);
+                tornCloudKnotGeometryMesh.scale.set(5, 2, scale * tubularSegments, scale * radialSegments, p, q);
+                torusKnotGeometryMesh.scale.set(5, 1, scale * tubularSegments, scale * radialSegments, p, q);
+            }
+
+            if (useTime > timeMarker6 && useTime < timeMarker7) {
+                camera.position.z = 10;
+                camera.position.x = scale;
+                camera.position.y = scale;
+                group.rotation.x = 0;
+                group.rotation.y = 0;
+                group2.rotation.x = performance.now() / 2000;
+                group2.rotation.y = performance.now() / 1000;
+                group3.rotation.x = performance.now() / 1000;
+                group3.rotation.y = performance.now() / 1000;
+                tornCloudKnotGeometryMesh.material = videoMaterial;
+                roseCylinderGeometryMesh.material = tornCloudMaterial;
+                torusKnotGeometryMesh.scale.set(1, 1, 1, 1, 1);
+            }
+
+            if (useTime > timeMarker7 && useTime < timeMarker8) {
+                // scene.background = new THREE.Color("#5381ba");
+            }
+
+            if (useTime > timeMarker8 && useTime < timeMarker9) {
+                torusKnotGeometryMesh.material = whiteMaterial;
+                resetScene(scene)
+                resetGroup([group, group2, group3]);
+                scene.add(group)
+                group.rotation.x = performance.now() / 2000;
+                group.rotation.y = performance.now() / 1000;
+                group.add(torusKnotGeometryMesh)
+                torusKnotGeometryMesh.scale.set(1, 1 * scale3, 1 * scale3, 1, 1)
+                camera.position.z = 25;
+                camera.position.x = 0;
+                camera.position.y = 0;
+            }
+            if (useTime > timeMarker9 && useTime < timeMarker10) {
+                resetGroup([group, group2, group3]);
+                scene.background = new THREE.Color("white");
+                let card = new THREE.Object3D();
+                planeGeometryMesh.material = peggyMaterial;
+                card.add(planeGeometryMesh)
+                let planeGeometryMeshBack = planeGeometryMesh.clone();
+                planeGeometryMeshBack.applyMatrix(new THREE.Matrix4().makeRotationY(Math.PI));
+                planeGeometryMeshBack.material = coreyMaterial;
+                card.add(planeGeometryMeshBack)
+                camera.position.z = 75;
+                group.position.z = scale3 * 3;
+                group.rotation.x = scale3 * 4;
+                group.rotation.y = scale3 * 5;
+                group.scale.multiplyScalar(1.005);
+                for (var i = 1; i < 40; i++) {
+                    let mesh = card.clone()
+                    mesh.position.x = mesh.position.x + i
+                    mesh.position.y = Math.log2(mesh.position.y + i * 30);
+                    mesh.position.z = mesh.position.z + i * 3;
+                    let mesh2 = mesh.clone();
+                    mesh2.position.x = mesh2.position.z + 1;
+                    mesh2.position.y = -mesh2.position.y;
+                    mesh2.position.z = -mesh2.position.z + 1;
+                    let mesh3 = mesh.clone();
+                    mesh3.position.x = -mesh3.position.x;
+                    mesh3.position.y = mesh3.position.y + 1;
+                    mesh3.position.z = -mesh3.position.z + 1;
+                    let mesh4 = mesh.clone();
+                    mesh4.position.x = -mesh4.position.x;
+                    mesh4.position.y = -mesh4.position.y;
+                    mesh4.position.z = mesh4.position.z + 1;
+                    group.add(mesh);
+                    group.add(mesh2);
+                    group.add(mesh3);
+                    group.add(mesh4);
+                }
+            }
+
+            if (useTime > timeMarker10 && useTime < timeMarker01) {
+                for (var i = 1; i < 30; i++) {
+                    let newGroup = group.clone();
+                    newGroup.position.x = -newGroup.position.x * 1.5;
+                    newGroup.position.y = -newGroup.position.y * 1.5;
+                    newGroup.position.z = -newGroup.position.z * 75 * scale3;
+                    newGroup.rotation.x = -newGroup.rotation.x * scale3 * 1.5;
+                    newGroup.rotation.y = scale3 * 3;
+                    scene.add(newGroup)
+                }
+                group.scale.multiplyScalar(.85);
+                peggySphereMesh.scale.set(scale3 * .5, 1, 1)
+                // addNoise(peggySphereMesh, time*2, 20);
+                // group.rotation.x = scale3*4;
+                // group.rotation.y = scale3*5;
+                // group.scale.multiplyScalar(1.005);
+                // camera.position.z = 75;
+                // group.position.z = 100*scale3;
+                // group.rotation.x = scale;
+                // group.rotation.y = scale;
+                // planeGeometryMesh.material = roseMaterial;
+                // const planeGeometryMesh2 = planeGeometryMesh.clone();
+                // planeGeometryMesh2.material = checkersMaterial;
+                // planeGeometryMesh2.geometry = planeGeometry;
+                // planeGeometryMesh2.position.z = 50;
+                // group.add(roseCylinderGeometryMesh)
+                // roseCylinderGeometryMesh.material = stripesMaterial;
+                // group.add(planeGeometryMesh)
+                // scene.add(group)
+                // scene.add(group2)
+                // scene.add(group3)
+                // group2.position.z = 75*scale3;
+                // group2.rotation.x = performance.now() / 2000;
+                // group2.rotation.y = performance.now() / 1200;
+                // group2.add(roseCylinderGeometryMesh)
+            }
+            // 80
+            if (useTime > timeMarker01 && useTime < timeMarker03) {
+                resetScene(scene)
+                resetGroup([group, group2, group3]);
+                group.position.z = 70;
+                scene.add(group)
+                scene.add(group2)
+                scene.add(group3)
+                camera.position.z = 75 * scale3 / 3;
+                camera.position.x = 0;
+                camera.position.y = 0;
+                group3.position.x = 0;
+                group3.position.y = 0;
+                group3.position.z = 0;
+                torusKnotGeometryMesh.scale.set(1, 5, 10, 10, 1)
+                torusKnotGeometryMesh.material = videoMaterial;
+                group3.add(torusKnotGeometryMesh);
+            }
+            // drop 100
+            if (useTime > timeMarker03 && useTime < timeMarker04) {
+                group2.add(peggySphereMesh);
+                addNoise(peggySphereMesh, 10 * scale3, 100);
+                group3.position.x = 0;
+                group3.position.y = 0;
+                group3.position.z = 0;
+                torusKnotGeometryMesh.scale.set(1, 5, 10, 10, 1)
+                torusKnotGeometryMesh.material = coreyMaterial;
+                group3.add(torusKnotGeometryMesh);
+                // camera.position.z = 25;
+                // group.rotation.x = 0;
+                // group.rotation.y = 0;
+                // addNoise(peggySphereMesh, scale3, 100);
+                // group2.add(peggySphereMesh);
+                // peggySphereMesh.material = peggyMaterial;
+                // torusKnotGeometryMesh.material = coreyMaterial;
+                // let newKnotMesh = torusKnotGeometryMesh.clone()
+                // newKnotMesh.scale.set(1, 5, 10, 10, 1)
+                // group2.add(newKnotMesh);
+                // addNoise(peggySphereMesh, 10*scale3, 100);
+                // group3.position.x = 0;
+                // group3.position.y = 0;
+                // group3.position.z = 0;
+                // torusKnotGeometryMesh.scale.set(1, 5, 10, 10, 1)
+                // torusKnotGeometryMesh.material = coreyMaterial;
+                // group3.add(torusKnotGeometryMesh);
+            }
+            // 106
+            if (useTime > timeMarker04 && useTime < timeMarker05) {
+
+            }
+            // 118
+            if (useTime > timeMarker05) {
+                if (params.animationView != true) {
+                    params.animationVfiew = true;
+                    // headGLTFLoader.load('scene.gltf', function (gltf) {
+                    //   gltf.scene.traverse ((o) => {
+                    //     if (o.isMesh) {
+                    //       // note: for a multi-material mesh, `o.material` may be an array,
+                    //       // in which case you'd need to set `.map` on each value.
+                    //       // o.material.map = grassTexture;
+                    //       // gltf.material = grassMaterial;
+                    //     }
+                    //   });
+                    //   console.log('gltf', gltf)
+                    //   scene.add(gltf.scene);
+                    // });
+                    // console.log('lines', lines.position, 'camera', camera.position);
+                    // lines.position.set(1*scale3, 0.1*scale3, 75)
+                    // lines.rotation.set(0.5*scale3, 0, 0)
+                    // scene.add(lines);
+                    // var diffuseColor = new THREE.Color().setHSL(alpha, 0.5, gamma * 0.5 + 0.1);
+                    for(i=0;i<500;i=i+1) {
+                        var sweetSphere1 = sweetSphere.clone()
+                        sweetSphere1.position.x = -100*scale3
+                        sweetSphere1.position.y = Math.floor(Math.random() * 10) + 0
+                        sweetSphere1.position.z = i/10
+                        sweetSphere1.material = new THREE.MeshBasicMaterial({ color: 'red' });
+                        var sweetSphere2 = sweetSphere.clone()
+                        sweetSphere2.position.x = 100*scale3
+                        sweetSphere2.position.y = Math.floor(Math.random() * 10) + 0
+                        sweetSphere2.position.z = i/10
+                        sweetSphere2.material = new THREE.MeshBasicMaterial({ color: 'blue' });
+                        scene.add(sweetSphere1);
+                        scene.add(sweetSphere2);
+                    }
+                    for(i=0;i<500;i=i+1) {
+                        var sweetSphere1 = sweetSphere.clone()
+                        sweetSphere1.position.x = -100*scale3
+                        sweetSphere1.position.y = Math.floor(Math.random() * 10) + 0
+                        sweetSphere1.position.z = i*10
+                        sweetSphere1.material = new THREE.MeshBasicMaterial({ color: 'yellow' });
+                        var sweetSphere2 = sweetSphere1.clone()
+                        sweetSphere2.position.x = 100*scale3
+                        sweetSphere2.position.y = Math.floor(Math.random() * 10) + 0
+                        sweetSphere2.position.z = i/10
+                        sweetSphere2.material = new THREE.MeshBasicMaterial({ color: 'purple' });
+                        scene.add(sweetSphere1);
+                        scene.add(sweetSphere2);
+                    }
+                    if (count === false) {
+                        resetGroup([group, group2, group3]);
+                        resetScene(scene)
+                        console.log('position', scene.position.z, camera.position.z, )
+                        scene.position.z = 0;
+                        // camera.position.z = scale;
+                        scene.background = new THREE.Color("#FFF");
+                        // scene.background = new THREE.Color("#e5b9ba");
+                        headOBJLoader.load('HEAD_001.obj', function(object) {
+                            console.log('obj', object)
+                            // For any meshes in the model, add our material.
+                            object.traverse(function(node) {
+                                if (node.isMesh) node.material = grassMaterial;
+                            });
+                            headMesh = object;
+                            scene.add(headMesh);
+                        });
+                        damaGLTFLoader.load('scene.gltf', function(object) {
+                            console.log('gltf', object)
+                            // For any meshes in the model, add our material.
+                            // object.traverse(function(node) {
+                            //     if (node.isMesh) node.material = grassMaterial;
+                            // });
+                            damaMesh = object;
+                            scene.add(damaMesh);
+                        });
+                        count = true;
+                    }
+                    if (headMesh) {
+                        headMesh.rotation.x = scale3 / 3;
+                        headMesh.rotation.y = scale3 / 4;
+                        headMesh.rotation.z = scale3 * 5;
+                        headMesh.position.x = scale / 2;
+                        headMesh.position.y = scale / 2;
+                        headMesh.position.z = 60;
+                    }
+                }
+            }
+        }
+    }
+
+    function addNoise(mesh, scale, multiple) {
+        var k = 9;
+        // var time = performance.now() * 0.01;
+        var time = performance.now() * 0.001;
+        for (var i = 0; i < mesh.geometry.vertices.length; i++) {
+            var p = mesh.geometry.vertices[i];
+            // p.normalize().multiplyScalar(1 + .03 * Perlin.noise.perlin3(p.x * k + time, p.y * k, p.z * k));
+            p.normalize().multiplyScalar(1 + scale * multiple * Perlin.noise.perlin3(p.x * k + time, p.y * k, p.z * k));
+        }
+        mesh.geometry.verticesNeedUpdate = true;
+        mesh.geometry.computeVertexNormals();
+        mesh.geometry.normalsNeedUpdate = true;
+    }
+
+    function resetGroup(group) {
+        group.map(i => i.children.forEach(child => i.remove(child)))
+    }
+
+    function resetScene(scene) {
+        scene.children.forEach(child => scene.remove(child))
+    }
+
+    function buildScene() {
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color("white");
+        parent = new THREE.Object3D();
+        scene.add(parent);
+
+        return scene;
+    }
+
+    function buildRender({ width, height }) {
+        const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+        const DPR = (window.devicePixelRatio) ? window.devicePixelRatio : 1;
+        renderer.setPixelRatio(DPR);
+        renderer.setSize(width, height);
+
+        renderer.gammaInput = true;
+        renderer.gammaOutput = true;
+
+        return renderer;
+    }
+
+    function buildCamera(animationView, screenDimensions) {
+        splineCamera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.01, 1000);
+        parent.add(splineCamera);
+        cameraHelper = new THREE.CameraHelper(splineCamera);
+        cameraEye = new THREE.Mesh(new THREE.SphereBufferGeometry(5), new THREE.MeshBasicMaterial({ color: '#000', fog: false, transparent: false }));
+        parent.add(cameraEye);
+        cameraHelper.visible = params.cameraHelper;
+        cameraEye.visible = params.cameraHelper;
+        scene.add(cameraHelper);
+        animateCamera(cameraHelper, cameraEye);
+
+        let mainCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
+        let otherCamera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.01, 10000);
+
+        camera = animationView ?
+            splineCamera :
+            mainCamera;
+        camera.position.z = 75;
+        return camera;
+    }
+
+    function animateCamera(cameraHelper, cameraEye) {
+        cameraHelper.visible = params.cameraHelper;
+        cameraEye.visible = params.cameraHelper;
+    }
+
+    function animateCameraAlongSpline(splineCamera, tubeGeometry, binormal, normal) {
+        // animate camera along spline
+        var time = Date.now();
+        var looptime = 20 * 1000;
+        var t = (time % looptime) / looptime;
+        console.log(t)
+        console.log('tubegeometry', tubeGeometry)
+        var pos = tubeGeometry.parameters.path.getPointAt(t);
+        pos.multiplyScalar(params.scale);
+        // interpolation
+        var segments = tubeGeometry.tangents.length;
+        var pickt = t * segments;
+        var pick = Math.floor(pickt);
+        var pickNext = (pick + 1) % segments;
+        binormal.subVectors(tubeGeometry.binormals[pickNext], tubeGeometry.binormals[pick]);
+        binormal.multiplyScalar(pickt - pick).add(tubeGeometry.binormals[pick]);
+        var dir = tubeGeometry.parameters.path.getTangentAt(t);
+        var offset = 15;
+        normal.copy(binormal).cross(dir);
+        // we move on a offset on its binormal
+        pos.add(normal.clone().multiplyScalar(offset));
+        console.log(pos)
+        splineCamera.position.copy(pos);
+        cameraEye.position.copy(pos);
+        // using arclength for stablization in look ahead
+        var lookAt = tubeGeometry.parameters.path.getPointAt((t + 30 / tubeGeometry.parameters.path.getLength()) % 1).multiplyScalar(params.scale);
+        // camera orientation 2 - up orientation via normal
+        if (!params.lookAhead) lookAt.copy(pos).add(dir);
+        splineCamera.matrix.lookAt(splineCamera.position, lookAt, normal);
+        splineCamera.rotation.setFromRotationMatrix(splineCamera.matrix, splineCamera.rotation.order);
+        cameraHelper.update();
+        renderer.render(scene, params.animationView === true ? splineCamera : camera);
+    }
+
+
+    function createSceneSubjects(scene) {
+        const sceneSubjects = [
+            new GeneralLights(scene),
+            new SceneSubject(scene)
+        ];
+
+        return sceneSubjects;
+    }
+
+    function update() {
+        const elapsedTime = clock.getElapsedTime();
+
+        for (let i = 0; i < sceneSubjects.length; i++)
+            sceneSubjects[i].update(elapsedTime);
+
+        renderer.render(scene, camera);
+    }
+
+    function onWindowResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        // composer.setSize( window.innerWidth, window.innerHeight );
+    }
+
+    return {
+        update,
+        onWindowResize
+    }
+}
+
+export default SceneManager;

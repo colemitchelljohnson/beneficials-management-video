@@ -1,0 +1,22 @@
+*,
+*:before,
+*:after {
+    box-sizing: border-box;
+}
+
+a {
+    cursor: pointer;
+    color: inherit;
+}
+
+html,
+body {
+    margin: 0;
+    height: 100%;
+}
+
+// background
+section.site {
+    background-size: cover;
+
+}
