@@ -1,39 +1,53 @@
-import { useMemo } from 'react';
-import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
-import Box from '../Box';
-import * as Perlin from '../Perlin/index.js';
+import { useMemo } from "react";
+import * as THREE from "three";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
+import Box from "../Box";
+import * as Perlin from "../Perlin/index.js";
+// const Ocean = require('../Ocean/index.js');
 // import Curves from '../Curves/index.js';
 
 const EffectComposer = window.THREE.EffectComposer;
 const AfterimagePass = window.THREE.AfterimagePass;
 const RenderPass = window.THREE.RenderPass;
 
-const SceneManager = (canvas) => {
-
+const SceneManager = canvas => {
     const clock = new THREE.Clock();
 
     const screenDimensions = {
         width: canvas.width,
         height: canvas.height
-    }
+    };
 
     const pipeSpline = new THREE.CatmullRomCurve3([
-        new THREE.Vector3(0, 10, -10), new THREE.Vector3(10, 0, -10),
-        new THREE.Vector3(20, 0, 0), new THREE.Vector3(30, 0, 10),
-        new THREE.Vector3(30, 0, 20), new THREE.Vector3(20, 0, 30),
-        new THREE.Vector3(10, 0, 30), new THREE.Vector3(0, 0, 30),
-        new THREE.Vector3(-10, 10, 30), new THREE.Vector3(-10, 20, 30),
-        new THREE.Vector3(0, 30, 30), new THREE.Vector3(10, 30, 30),
-        new THREE.Vector3(20, 30, 15), new THREE.Vector3(10, 30, 10),
-        new THREE.Vector3(0, 30, 10), new THREE.Vector3(-10, 20, 10),
-        new THREE.Vector3(-10, 10, 10), new THREE.Vector3(0, 0, 10),
-        new THREE.Vector3(10, -10, 10), new THREE.Vector3(20, -15, 10),
-        new THREE.Vector3(30, -15, 10), new THREE.Vector3(40, -15, 10),
-        new THREE.Vector3(50, -15, 10), new THREE.Vector3(60, 0, 10),
-        new THREE.Vector3(70, 0, 0), new THREE.Vector3(80, 0, 0),
-        new THREE.Vector3(90, 0, 0), new THREE.Vector3(100, 0, 0)
+        new THREE.Vector3(0, 10, -10),
+        new THREE.Vector3(10, 0, -10),
+        new THREE.Vector3(20, 0, 0),
+        new THREE.Vector3(30, 0, 10),
+        new THREE.Vector3(30, 0, 20),
+        new THREE.Vector3(20, 0, 30),
+        new THREE.Vector3(10, 0, 30),
+        new THREE.Vector3(0, 0, 30),
+        new THREE.Vector3(-10, 10, 30),
+        new THREE.Vector3(-10, 20, 30),
+        new THREE.Vector3(0, 30, 30),
+        new THREE.Vector3(10, 30, 30),
+        new THREE.Vector3(20, 30, 15),
+        new THREE.Vector3(10, 30, 10),
+        new THREE.Vector3(0, 30, 10),
+        new THREE.Vector3(-10, 20, 10),
+        new THREE.Vector3(-10, 10, 10),
+        new THREE.Vector3(0, 0, 10),
+        new THREE.Vector3(10, -10, 10),
+        new THREE.Vector3(20, -15, 10),
+        new THREE.Vector3(30, -15, 10),
+        new THREE.Vector3(40, -15, 10),
+        new THREE.Vector3(50, -15, 10),
+        new THREE.Vector3(60, 0, 10),
+        new THREE.Vector3(70, 0, 0),
+        new THREE.Vector3(80, 0, 0),
+        new THREE.Vector3(90, 0, 0),
+        new THREE.Vector3(100, 0, 0)
     ]);
 
     // spline stuff
@@ -44,11 +58,16 @@ const SceneManager = (canvas) => {
         new THREE.Vector3(0, 40, 40),
         new THREE.Vector3(0, -40, 40)
     ]);
-    sampleClosedSpline.curveType = 'catmullrom';
+    sampleClosedSpline.curveType = "catmullrom";
     sampleClosedSpline.closed = true;
 
-
-    let camera, parent, tubeGeometry, splineMesh, splineCamera, cameraHelper, cameraEye;
+    let camera,
+        parent,
+        tubeGeometry,
+        splineMesh,
+        splineCamera,
+        cameraHelper,
+        cameraEye;
 
     const params = {
         spline: sampleClosedSpline,
@@ -58,16 +77,15 @@ const SceneManager = (canvas) => {
         closed: true,
         animationView: false,
         lookAhead: true,
-        cameraHelper: false,
+        cameraHelper: false
     };
-
 
     const scene = buildScene();
     const renderer = buildRender(screenDimensions);
     camera = buildCamera(params.animationView, screenDimensions);
     const sceneSubjects = createSceneSubjects(scene);
 
-    window.addEventListener('resize', onWindowResize, false);
+    window.addEventListener("resize", onWindowResize, false);
     // const composer = new EffectComposer( renderer );
     // composer.addPass( new RenderPass( scene, camera ) );
     // const afterimagePass = new AfterimagePass();
@@ -87,60 +105,128 @@ const SceneManager = (canvas) => {
         this.update = function(time) {
             // light.intensity = (Math.sin(time)+1.5)/1.5;
             // light.color.setHSL( Math.sin(time), 0.5, 0.5 );
-        }
+        };
     }
 
     function SceneSubject(scene) {
-        var headOBJLoader = new OBJLoader().setPath('./models/head_001/');
-        var damaGLTFLoader = new GLTFLoader().setPath('./models/dama_de_elche/');
+        // begin ocean
+        // var gsize = 512;
+        // var res = 1024;
+        // var gres = res / 2;
+        // var origx = -gsize / 2;
+        // var origz = -gsize / 2;
+        // let ms_Ocean = new THREE.Ocean(renderer, camera, scene, {
+        //     INITIAL_SIZE: 256.0,
+        //     INITIAL_WIND: [10.0, 10.0],
+        //     INITIAL_CHOPPINESS: 1.5,
+        //     CLEAR_COLOR: [1.0, 1.0, 1.0, 0.0],
+        //     GEOMETRY_ORIGIN: [origx, origz],
+        //     SUN_DIRECTION: [-1.0, 1.0, 1.0],
+        //     OCEAN_COLOR: new THREE.Vector3(0.004, 0.016, 0.047),
+        //     SKY_COLOR: new THREE.Vector3(3.2, 9.6, 12.8),
+        //     EXPOSURE: 0.35,
+        //     GEOMETRY_RESOLUTION: gres,
+        //     GEOMETRY_SIZE: gsize,
+        //     RESOLUTION: res
+        // });
+        // ms_Ocean.materialOcean.uniforms["u_projectionMatrix"] = { value: camera.projectionMatrix };
+        // ms_Ocean.materialOcean.uniforms["u_viewMatrix"] = { value: camera.matrixWorldInverse };
+        // ms_Ocean.materialOcean.uniforms["u_cameraPosition"] = { value: camera.position };
+        // scene.add(ms_Ocean.oceanMesh);
+
+        // end ocean
+
+        var headOBJLoader = new OBJLoader().setPath("./models/head_001/");
+        var damaGLTFLoader = new GLTFLoader().setPath(
+            "./models/dama_de_elche/"
+        );
         // create image textures
-        const tornCloudTexture = new THREE.TextureLoader().load('images/IMG_5412.PNG');
+        const tornCloudTexture = new THREE.TextureLoader().load(
+            "images/IMG_5412.PNG"
+        );
         tornCloudTexture.wrapS = THREE.RepeatWrapping;
         tornCloudTexture.wrapT = THREE.RepeatWrapping;
         tornCloudTexture.repeat.set(100, 100);
-        const checkersTexture = new THREE.TextureLoader().load('images/checkers2.jpg');
-        const roseTexture = new THREE.TextureLoader().load('images/rose1.jpg');
-        const peggyTexture = new THREE.TextureLoader().load('images/peggy.jpg');
-        const coreyTexture = new THREE.TextureLoader().load('images/corey.jpg');
-        const grassTexture = new THREE.TextureLoader().load('images/album-art-grass.jpg');
-        const stripesTexture = new THREE.TextureLoader().load('images/stripes.jpg');
+        const checkersTexture = new THREE.TextureLoader().load(
+            "images/checkers2.jpg"
+        );
+        const roseTexture = new THREE.TextureLoader().load("images/rose1.jpg");
+        const peggyTexture = new THREE.TextureLoader().load("images/peggy.jpg");
+        const coreyTexture = new THREE.TextureLoader().load("images/corey.jpg");
+        const grassTexture = new THREE.TextureLoader().load(
+            "images/album-art-grass.jpg"
+        );
+        const stripesTexture = new THREE.TextureLoader().load(
+            "images/stripes.jpg"
+        );
         stripesTexture.wrapS = THREE.RepeatWrapping;
         stripesTexture.wrapT = THREE.RepeatWrapping;
         stripesTexture.repeat.set(1, 1);
 
         // create video texture
-        const video = document.getElementById('video');
+        const video = document.getElementById("video");
         const videoTexture = new THREE.VideoTexture(video);
         video.play();
 
-        const audio = document.getElementById('audio');
+        const audio = document.getElementById("audio");
         audio.play();
 
-        const documentTime = document.getElementById('time');
+        const documentTime = document.getElementById("time");
 
         // create materials
-        const tornCloudMaterial = new THREE.MeshBasicMaterial({ map: tornCloudTexture });
+        const tornCloudMaterial = new THREE.MeshBasicMaterial({
+            map: tornCloudTexture
+        });
         const whiteMaterial = new THREE.MeshBasicMaterial({ color: "white" });
-        const checkersMaterial = new THREE.MeshBasicMaterial({ map: checkersTexture });
+        const checkersMaterial = new THREE.MeshBasicMaterial({
+            map: checkersTexture
+        });
         const roseMaterial = new THREE.MeshBasicMaterial({ map: roseTexture });
-        const videoMaterial = new THREE.MeshBasicMaterial({ map: videoTexture });
-        const peggyMaterial = new THREE.MeshBasicMaterial({ map: peggyTexture });
-        const coreyMaterial = new THREE.MeshBasicMaterial({ map: coreyTexture });
-        const grassMaterial = new THREE.MeshBasicMaterial({ map: grassTexture });
-        const stripesMaterial = new THREE.MeshBasicMaterial({ map: stripesTexture });
+        const videoMaterial = new THREE.MeshBasicMaterial({
+            map: videoTexture
+        });
+        const peggyMaterial = new THREE.MeshBasicMaterial({
+            map: peggyTexture
+        });
+        const coreyMaterial = new THREE.MeshBasicMaterial({
+            map: coreyTexture
+        });
+        const grassMaterial = new THREE.MeshBasicMaterial({
+            map: grassTexture
+        });
+        const stripesMaterial = new THREE.MeshBasicMaterial({
+            map: stripesTexture
+        });
 
         var binormal = new THREE.Vector3();
         var normal = new THREE.Vector3();
 
         const extrudePath = pipeSpline;
-        tubeGeometry = new THREE.TubeBufferGeometry(extrudePath, params.extrusionSegments, 2, params.radiusSegments, params.closed);
+        tubeGeometry = new THREE.TubeBufferGeometry(
+            extrudePath,
+            params.extrusionSegments,
+            2,
+            params.radiusSegments,
+            params.closed
+        );
         const tubeMaterial = new THREE.MeshLambertMaterial({ color: 0xff00ff });
-        const wireframeMaterial = new THREE.MeshBasicMaterial({ color: 0xff00ff, opacity: 0.9, wireframe: false, transparent: false });
+        const wireframeMaterial = new THREE.MeshBasicMaterial({
+            color: 0xff00ff,
+            opacity: 0.9,
+            wireframe: false,
+            transparent: false
+        });
         splineMesh = new THREE.Mesh(tubeGeometry, videoMaterial);
         const wireframe = new THREE.Mesh(tubeGeometry, videoMaterial);
         splineMesh.add(wireframeMaterial);
         params.animationView && parent.add(splineMesh);
-        params.animationView && animateCameraAlongSpline(splineCamera, tubeGeometry, binormal, normal)
+        params.animationView &&
+            animateCameraAlongSpline(
+                splineCamera,
+                tubeGeometry,
+                binormal,
+                normal
+            );
 
         // end spline stuff
 
@@ -160,20 +246,59 @@ const SceneManager = (canvas) => {
         const boxGeometry = new THREE.BoxGeometry(boxSize, boxSize, boxSize);
         const videoBoxGeometry = new THREE.BoxGeometry(10, 10, 10);
         const roseCylinderGeometry = new THREE.CylinderGeometry(2, 2, 8, 30, 5);
-        const torusGeometry = new THREE.TorusGeometry(radius, tube, tubularSegments, radialSegments, p, 2);
-        const torusKnotGeometry = new THREE.TorusKnotGeometry(radius, tube, tubularSegments, radialSegments, p, q);
-        const tornCloudKnotGeometry = new THREE.TorusKnotGeometry(radius, tube, tubularSegments, radialSegments, p, q);
+        const torusGeometry = new THREE.TorusGeometry(
+            radius,
+            tube,
+            tubularSegments,
+            radialSegments,
+            p,
+            2
+        );
+        const torusKnotGeometry = new THREE.TorusKnotGeometry(
+            radius,
+            tube,
+            tubularSegments,
+            radialSegments,
+            p,
+            q
+        );
+        const tornCloudKnotGeometry = new THREE.TorusKnotGeometry(
+            radius,
+            tube,
+            tubularSegments,
+            radialSegments,
+            p,
+            q
+        );
         const planeGeometry = new THREE.PlaneGeometry(7, 7, 7);
         const sphereGeometry = new THREE.SphereGeometry(1, 128, 128);
 
         // create meshes
-        const videoBoxGeometryMesh = new THREE.Mesh(videoBoxGeometry, videoMaterial);
+        const videoBoxGeometryMesh = new THREE.Mesh(
+            videoBoxGeometry,
+            videoMaterial
+        );
         const whiteBoxGeometryMesh = new THREE.Mesh(boxGeometry, whiteMaterial);
-        const roseCylinderGeometryMesh = new THREE.Mesh(roseCylinderGeometry, whiteMaterial);
-        const torusGeometryMesh = new THREE.Mesh(torusGeometry, checkersMaterial);
-        const torusKnotGeometryMesh = new THREE.Mesh(torusKnotGeometry, roseMaterial);
-        const tornCloudKnotGeometryMesh = new THREE.Mesh(tornCloudKnotGeometry, tornCloudMaterial);
-        const planeGeometryMesh = new THREE.Mesh(planeGeometry, checkersMaterial);
+        const roseCylinderGeometryMesh = new THREE.Mesh(
+            roseCylinderGeometry,
+            whiteMaterial
+        );
+        const torusGeometryMesh = new THREE.Mesh(
+            torusGeometry,
+            checkersMaterial
+        );
+        const torusKnotGeometryMesh = new THREE.Mesh(
+            torusKnotGeometry,
+            roseMaterial
+        );
+        const tornCloudKnotGeometryMesh = new THREE.Mesh(
+            tornCloudKnotGeometry,
+            tornCloudMaterial
+        );
+        const planeGeometryMesh = new THREE.Mesh(
+            planeGeometry,
+            checkersMaterial
+        );
         const peggySphereMesh = new THREE.Mesh(sphereGeometry, peggyMaterial);
         peggySphereMesh.scale.multiplyScalar(20);
         const coreySphereMesh = new THREE.Mesh(sphereGeometry, coreyMaterial);
@@ -189,11 +314,11 @@ const SceneManager = (canvas) => {
         var sweetSphere = new THREE.Mesh(sweetGeometry, sweetMaterial);
 
         // add to group
-        group.add(torusKnotGeometryMesh)
+        group.add(torusKnotGeometryMesh);
         // group.add(tubeGeometryMesh)
         // group.add(peggySphereMesh)
-        group2.add(roseCylinderGeometryMesh)
-        group3.add(tornCloudKnotGeometryMesh)
+        group2.add(roseCylinderGeometryMesh);
+        group3.add(tornCloudKnotGeometryMesh);
 
         // add group to scene
         scene.add(group);
@@ -228,7 +353,10 @@ const SceneManager = (canvas) => {
                 positions.push((p.y - ySize) / ySize);
                 positions.push((p.z - zSize) / zSize);
             }
-            let positionAttribute = new THREE.Float32BufferAttribute(positions, 3);
+            let positionAttribute = new THREE.Float32BufferAttribute(
+                positions,
+                3
+            );
             geometry.addAttribute("position", positionAttribute);
             let indexPairs = [];
             for (let i = 0; i < n; i++) {
@@ -247,19 +375,27 @@ const SceneManager = (canvas) => {
                 }
             }
             geometry.setIndex(indexPairs);
-            let lines = new THREE.LineSegments(geometry, new THREE.LineBasicMaterial({ color: 0x85144b, linewidth: 100 }));
+            let lines = new THREE.LineSegments(
+                geometry,
+                new THREE.LineBasicMaterial({ color: 0x85144b, linewidth: 100 })
+            );
 
             if (params.animationView) {
                 parent.add(splineMesh);
                 scene.add(parent);
                 buildCamera(params.animationView, screenDimensions);
-                console.log(camera)
-                animateCameraAlongSpline(splineCamera, tubeGeometry, binormal, normal);
+                console.log(camera);
+                animateCameraAlongSpline(
+                    splineCamera,
+                    tubeGeometry,
+                    binormal,
+                    normal
+                );
             }
             // console.log('before', camera.position)
             // console.log('after', camera.position)
             // addNoise(peggySphereMesh, .03)
-            console.log(time)
+            console.log(time);
             let useTime = time + 115;
             // let useTime = time;
             timeNotSet && (video.currentTime = useTime.toFixed(0));
@@ -268,7 +404,7 @@ const SceneManager = (canvas) => {
             documentTime.textContent = useTime.toFixed(0);
             let scale = Math.sin(useTime / 2) * 20;
             let scale3 = Math.sin(useTime / 3);
-            console.log('useTime', useTime, 'scale', scale, 'scale3', scale3)
+            console.log("useTime", useTime, "scale", scale, "scale3", scale3);
             const timeMarker1 = 3;
             const timeMarker2 = 7;
             const timeMarker3 = 12;
@@ -307,19 +443,40 @@ const SceneManager = (canvas) => {
                 scene.add(group3);
                 roseCylinderGeometryMesh.material = roseMaterial;
                 torusKnotGeometryMesh.material = videoMaterial;
-                tornCloudKnotGeometryMesh.scale.set(5, 1, scale * tubularSegments, scale * radialSegments, p, q);
+                tornCloudKnotGeometryMesh.scale.set(
+                    5,
+                    1,
+                    scale * tubularSegments,
+                    scale * radialSegments,
+                    p,
+                    q
+                );
             }
 
             if (useTime > timeMarker5 && useTime < timeMarker6) {
                 torusKnotGeometryMesh.material = roseMaterial;
                 roseCylinderGeometryMesh.material = videoMaterial;
-                roseCylinderGeometryMesh.scale.set(5, 5, 5, 5, 5)
+                roseCylinderGeometryMesh.scale.set(5, 5, 5, 5, 5);
                 camera.position.z = 50;
                 camera.position.x = scale;
                 camera.position.y = scale;
                 scene.add(group3);
-                tornCloudKnotGeometryMesh.scale.set(5, 2, scale * tubularSegments, scale * radialSegments, p, q);
-                torusKnotGeometryMesh.scale.set(5, 1, scale * tubularSegments, scale * radialSegments, p, q);
+                tornCloudKnotGeometryMesh.scale.set(
+                    5,
+                    2,
+                    scale * tubularSegments,
+                    scale * radialSegments,
+                    p,
+                    q
+                );
+                torusKnotGeometryMesh.scale.set(
+                    5,
+                    1,
+                    scale * tubularSegments,
+                    scale * radialSegments,
+                    p,
+                    q
+                );
             }
 
             if (useTime > timeMarker6 && useTime < timeMarker7) {
@@ -343,13 +500,19 @@ const SceneManager = (canvas) => {
 
             if (useTime > timeMarker8 && useTime < timeMarker9) {
                 torusKnotGeometryMesh.material = whiteMaterial;
-                resetScene(scene)
+                resetScene(scene);
                 resetGroup([group, group2, group3]);
-                scene.add(group)
+                scene.add(group);
                 group.rotation.x = performance.now() / 2000;
                 group.rotation.y = performance.now() / 1000;
-                group.add(torusKnotGeometryMesh)
-                torusKnotGeometryMesh.scale.set(1, 1 * scale3, 1 * scale3, 1, 1)
+                group.add(torusKnotGeometryMesh);
+                torusKnotGeometryMesh.scale.set(
+                    1,
+                    1 * scale3,
+                    1 * scale3,
+                    1,
+                    1
+                );
                 camera.position.z = 25;
                 camera.position.x = 0;
                 camera.position.y = 0;
@@ -359,19 +522,21 @@ const SceneManager = (canvas) => {
                 scene.background = new THREE.Color("white");
                 let card = new THREE.Object3D();
                 planeGeometryMesh.material = peggyMaterial;
-                card.add(planeGeometryMesh)
+                card.add(planeGeometryMesh);
                 let planeGeometryMeshBack = planeGeometryMesh.clone();
-                planeGeometryMeshBack.applyMatrix(new THREE.Matrix4().makeRotationY(Math.PI));
+                planeGeometryMeshBack.applyMatrix(
+                    new THREE.Matrix4().makeRotationY(Math.PI)
+                );
                 planeGeometryMeshBack.material = coreyMaterial;
-                card.add(planeGeometryMeshBack)
+                card.add(planeGeometryMeshBack);
                 camera.position.z = 75;
                 group.position.z = scale3 * 3;
                 group.rotation.x = scale3 * 4;
                 group.rotation.y = scale3 * 5;
                 group.scale.multiplyScalar(1.005);
                 for (var i = 1; i < 40; i++) {
-                    let mesh = card.clone()
-                    mesh.position.x = mesh.position.x + i
+                    let mesh = card.clone();
+                    mesh.position.x = mesh.position.x + i;
                     mesh.position.y = Math.log2(mesh.position.y + i * 30);
                     mesh.position.z = mesh.position.z + i * 3;
                     let mesh2 = mesh.clone();
@@ -401,10 +566,10 @@ const SceneManager = (canvas) => {
                     newGroup.position.z = -newGroup.position.z * 75 * scale3;
                     newGroup.rotation.x = -newGroup.rotation.x * scale3 * 1.5;
                     newGroup.rotation.y = scale3 * 3;
-                    scene.add(newGroup)
+                    scene.add(newGroup);
                 }
-                group.scale.multiplyScalar(.85);
-                peggySphereMesh.scale.set(scale3 * .5, 1, 1)
+                group.scale.multiplyScalar(0.85);
+                peggySphereMesh.scale.set(scale3 * 0.5, 1, 1);
                 // addNoise(peggySphereMesh, time*2, 20);
                 // group.rotation.x = scale3*4;
                 // group.rotation.y = scale3*5;
@@ -431,19 +596,19 @@ const SceneManager = (canvas) => {
             }
             // 80
             if (useTime > timeMarker01 && useTime < timeMarker03) {
-                resetScene(scene)
+                resetScene(scene);
                 resetGroup([group, group2, group3]);
                 group.position.z = 70;
-                scene.add(group)
-                scene.add(group2)
-                scene.add(group3)
-                camera.position.z = 75 * scale3 / 3;
+                scene.add(group);
+                scene.add(group2);
+                scene.add(group3);
+                camera.position.z = (75 * scale3) / 3;
                 camera.position.x = 0;
                 camera.position.y = 0;
                 group3.position.x = 0;
                 group3.position.y = 0;
                 group3.position.z = 0;
-                torusKnotGeometryMesh.scale.set(1, 5, 10, 10, 1)
+                torusKnotGeometryMesh.scale.set(1, 5, 10, 10, 1);
                 torusKnotGeometryMesh.material = videoMaterial;
                 group3.add(torusKnotGeometryMesh);
             }
@@ -454,7 +619,7 @@ const SceneManager = (canvas) => {
                 group3.position.x = 0;
                 group3.position.y = 0;
                 group3.position.z = 0;
-                torusKnotGeometryMesh.scale.set(1, 5, 10, 10, 1)
+                torusKnotGeometryMesh.scale.set(1, 5, 10, 10, 1);
                 torusKnotGeometryMesh.material = coreyMaterial;
                 group3.add(torusKnotGeometryMesh);
                 // camera.position.z = 25;
@@ -477,7 +642,6 @@ const SceneManager = (canvas) => {
             }
             // 106
             if (useTime > timeMarker04 && useTime < timeMarker05) {
-
             }
             // 118
             if (useTime > timeMarker05) {
@@ -500,44 +664,60 @@ const SceneManager = (canvas) => {
                     // lines.rotation.set(0.5*scale3, 0, 0)
                     // scene.add(lines);
                     // var diffuseColor = new THREE.Color().setHSL(alpha, 0.5, gamma * 0.5 + 0.1);
-                    for(i=0;i<500;i=i+1) {
-                        var sweetSphere1 = sweetSphere.clone()
-                        sweetSphere1.position.x = -100*scale3
-                        sweetSphere1.position.y = Math.floor(Math.random() * 10) + 0
-                        sweetSphere1.position.z = i/10
-                        sweetSphere1.material = new THREE.MeshBasicMaterial({ color: 'red' });
-                        var sweetSphere2 = sweetSphere.clone()
-                        sweetSphere2.position.x = 100*scale3
-                        sweetSphere2.position.y = Math.floor(Math.random() * 10) + 0
-                        sweetSphere2.position.z = i/10
-                        sweetSphere2.material = new THREE.MeshBasicMaterial({ color: 'blue' });
+                    for (i = 0; i < 500; i = i + 1) {
+                        var sweetSphere1 = sweetSphere.clone();
+                        sweetSphere1.position.x = -100 * scale3;
+                        sweetSphere1.position.y =
+                            Math.floor(Math.random() * 10) + 0;
+                        sweetSphere1.position.z = i / 10;
+                        sweetSphere1.material = new THREE.MeshBasicMaterial({
+                            color: "red"
+                        });
+                        var sweetSphere2 = sweetSphere.clone();
+                        sweetSphere2.position.x = 100 * scale3;
+                        sweetSphere2.position.y =
+                            Math.floor(Math.random() * 10) + 0;
+                        sweetSphere2.position.z = i / 10;
+                        sweetSphere2.material = new THREE.MeshBasicMaterial({
+                            color: "blue"
+                        });
                         scene.add(sweetSphere1);
                         scene.add(sweetSphere2);
                     }
-                    for(i=0;i<500;i=i+1) {
-                        var sweetSphere1 = sweetSphere.clone()
-                        sweetSphere1.position.x = -100*scale3
-                        sweetSphere1.position.y = Math.floor(Math.random() * 10) + 0
-                        sweetSphere1.position.z = i*10
-                        sweetSphere1.material = new THREE.MeshBasicMaterial({ color: 'yellow' });
-                        var sweetSphere2 = sweetSphere1.clone()
-                        sweetSphere2.position.x = 100*scale3
-                        sweetSphere2.position.y = Math.floor(Math.random() * 10) + 0
-                        sweetSphere2.position.z = i/10
-                        sweetSphere2.material = new THREE.MeshBasicMaterial({ color: 'purple' });
+                    for (i = 0; i < 500; i = i + 1) {
+                        var sweetSphere1 = sweetSphere.clone();
+                        sweetSphere1.position.x = -100 * scale3;
+                        sweetSphere1.position.y =
+                            Math.floor(Math.random() * 10) + 0;
+                        sweetSphere1.position.z = i * 10;
+                        sweetSphere1.material = new THREE.MeshBasicMaterial({
+                            color: "yellow"
+                        });
+                        var sweetSphere2 = sweetSphere1.clone();
+                        sweetSphere2.position.x = 100 * scale3;
+                        sweetSphere2.position.y =
+                            Math.floor(Math.random() * 10) + 0;
+                        sweetSphere2.position.z = i / 10;
+                        sweetSphere2.material = new THREE.MeshBasicMaterial({
+                            color: "purple"
+                        });
                         scene.add(sweetSphere1);
                         scene.add(sweetSphere2);
                     }
                     if (count === false) {
                         resetGroup([group, group2, group3]);
-                        resetScene(scene)
-                        console.log('position', scene.position.z, camera.position.z, )
+                        resetScene(scene);
+                        console.log(
+                            "position",
+                            scene.position.z,
+                            camera.position.z
+                        );
                         scene.position.z = 0;
                         // camera.position.z = scale;
                         scene.background = new THREE.Color("#FFF");
                         // scene.background = new THREE.Color("#e5b9ba");
-                        headOBJLoader.load('HEAD_001.obj', function(object) {
-                            console.log('obj', object)
+                        headOBJLoader.load("HEAD_001.obj", function(object) {
+                            console.log("obj", object);
                             // For any meshes in the model, add our material.
                             object.traverse(function(node) {
                                 if (node.isMesh) node.material = grassMaterial;
@@ -545,8 +725,8 @@ const SceneManager = (canvas) => {
                             headMesh = object;
                             scene.add(headMesh);
                         });
-                        damaGLTFLoader.load('scene.gltf', function(object) {
-                            console.log('gltf', object)
+                        damaGLTFLoader.load("scene.gltf", function(object) {
+                            console.log("gltf", object);
                             // For any meshes in the model, add our material.
                             // object.traverse(function(node) {
                             //     if (node.isMesh) node.material = grassMaterial;
@@ -566,7 +746,7 @@ const SceneManager = (canvas) => {
                     }
                 }
             }
-        }
+        };
     }
 
     function addNoise(mesh, scale, multiple) {
@@ -576,7 +756,12 @@ const SceneManager = (canvas) => {
         for (var i = 0; i < mesh.geometry.vertices.length; i++) {
             var p = mesh.geometry.vertices[i];
             // p.normalize().multiplyScalar(1 + .03 * Perlin.noise.perlin3(p.x * k + time, p.y * k, p.z * k));
-            p.normalize().multiplyScalar(1 + scale * multiple * Perlin.noise.perlin3(p.x * k + time, p.y * k, p.z * k));
+            p.normalize().multiplyScalar(
+                1 +
+                    scale *
+                        multiple *
+                        Perlin.noise.perlin3(p.x * k + time, p.y * k, p.z * k)
+            );
         }
         mesh.geometry.verticesNeedUpdate = true;
         mesh.geometry.computeVertexNormals();
@@ -584,11 +769,11 @@ const SceneManager = (canvas) => {
     }
 
     function resetGroup(group) {
-        group.map(i => i.children.forEach(child => i.remove(child)))
+        group.map(i => i.children.forEach(child => i.remove(child)));
     }
 
     function resetScene(scene) {
-        scene.children.forEach(child => scene.remove(child))
+        scene.children.forEach(child => scene.remove(child));
     }
 
     function buildScene() {
@@ -601,8 +786,12 @@ const SceneManager = (canvas) => {
     }
 
     function buildRender({ width, height }) {
-        const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
-        const DPR = (window.devicePixelRatio) ? window.devicePixelRatio : 1;
+        const renderer = new THREE.WebGLRenderer({
+            canvas: canvas,
+            antialias: true,
+            alpha: true
+        });
+        const DPR = window.devicePixelRatio ? window.devicePixelRatio : 1;
         renderer.setPixelRatio(DPR);
         renderer.setSize(width, height);
 
@@ -613,22 +802,42 @@ const SceneManager = (canvas) => {
     }
 
     function buildCamera(animationView, screenDimensions) {
-        splineCamera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.01, 1000);
+        splineCamera = new THREE.PerspectiveCamera(
+            50,
+            window.innerWidth / window.innerHeight,
+            0.01,
+            1000
+        );
         parent.add(splineCamera);
         cameraHelper = new THREE.CameraHelper(splineCamera);
-        cameraEye = new THREE.Mesh(new THREE.SphereBufferGeometry(5), new THREE.MeshBasicMaterial({ color: '#000', fog: false, transparent: false }));
+        cameraEye = new THREE.Mesh(
+            new THREE.SphereBufferGeometry(5),
+            new THREE.MeshBasicMaterial({
+                color: "#000",
+                fog: false,
+                transparent: false
+            })
+        );
         parent.add(cameraEye);
         cameraHelper.visible = params.cameraHelper;
         cameraEye.visible = params.cameraHelper;
         scene.add(cameraHelper);
         animateCamera(cameraHelper, cameraEye);
 
-        let mainCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
-        let otherCamera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.01, 10000);
+        let mainCamera = new THREE.PerspectiveCamera(
+            75,
+            window.innerWidth / window.innerHeight,
+            0.1,
+            100
+        );
+        let otherCamera = new THREE.PerspectiveCamera(
+            50,
+            window.innerWidth / window.innerHeight,
+            0.01,
+            10000
+        );
 
-        camera = animationView ?
-            splineCamera :
-            mainCamera;
+        camera = animationView ? splineCamera : mainCamera;
         camera.position.z = 75;
         return camera;
     }
@@ -638,13 +847,18 @@ const SceneManager = (canvas) => {
         cameraEye.visible = params.cameraHelper;
     }
 
-    function animateCameraAlongSpline(splineCamera, tubeGeometry, binormal, normal) {
+    function animateCameraAlongSpline(
+        splineCamera,
+        tubeGeometry,
+        binormal,
+        normal
+    ) {
         // animate camera along spline
         var time = Date.now();
         var looptime = 20 * 1000;
         var t = (time % looptime) / looptime;
-        console.log(t)
-        console.log('tubegeometry', tubeGeometry)
+        console.log(t);
+        console.log("tubegeometry", tubeGeometry);
         var pos = tubeGeometry.parameters.path.getPointAt(t);
         pos.multiplyScalar(params.scale);
         // interpolation
@@ -652,26 +866,36 @@ const SceneManager = (canvas) => {
         var pickt = t * segments;
         var pick = Math.floor(pickt);
         var pickNext = (pick + 1) % segments;
-        binormal.subVectors(tubeGeometry.binormals[pickNext], tubeGeometry.binormals[pick]);
+        binormal.subVectors(
+            tubeGeometry.binormals[pickNext],
+            tubeGeometry.binormals[pick]
+        );
         binormal.multiplyScalar(pickt - pick).add(tubeGeometry.binormals[pick]);
         var dir = tubeGeometry.parameters.path.getTangentAt(t);
         var offset = 15;
         normal.copy(binormal).cross(dir);
         // we move on a offset on its binormal
         pos.add(normal.clone().multiplyScalar(offset));
-        console.log(pos)
+        console.log(pos);
         splineCamera.position.copy(pos);
         cameraEye.position.copy(pos);
         // using arclength for stablization in look ahead
-        var lookAt = tubeGeometry.parameters.path.getPointAt((t + 30 / tubeGeometry.parameters.path.getLength()) % 1).multiplyScalar(params.scale);
+        var lookAt = tubeGeometry.parameters.path
+            .getPointAt((t + 30 / tubeGeometry.parameters.path.getLength()) % 1)
+            .multiplyScalar(params.scale);
         // camera orientation 2 - up orientation via normal
         if (!params.lookAhead) lookAt.copy(pos).add(dir);
         splineCamera.matrix.lookAt(splineCamera.position, lookAt, normal);
-        splineCamera.rotation.setFromRotationMatrix(splineCamera.matrix, splineCamera.rotation.order);
+        splineCamera.rotation.setFromRotationMatrix(
+            splineCamera.matrix,
+            splineCamera.rotation.order
+        );
         cameraHelper.update();
-        renderer.render(scene, params.animationView === true ? splineCamera : camera);
+        renderer.render(
+            scene,
+            params.animationView === true ? splineCamera : camera
+        );
     }
-
 
     function createSceneSubjects(scene) {
         const sceneSubjects = [
@@ -701,7 +925,7 @@ const SceneManager = (canvas) => {
     return {
         update,
         onWindowResize
-    }
-}
+    };
+};
 
 export default SceneManager;

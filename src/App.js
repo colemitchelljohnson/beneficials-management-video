@@ -1,106 +1,119 @@
-import React, { useState, useEffect } from 'react';
-import { animated } from 'react-spring';
-import Environment from './containers/Environment';
-import Footer from './containers/Footer';
-import Box from './components/Box';
-import Grid from './components/Grid';
-import Stars from './components/Stars';
-import Repulsive from './components/Repulsive';
-import SceneManager from './components/SceneManager';
-import ThreeEntryPoint from './components/ThreeEntryPoint';
+import React, { useState, useEffect } from "react";
+import { animated } from "react-spring";
+import Environment from "./containers/Environment";
+import Footer from "./containers/Footer";
+import Box from "./components/Box";
+import Grid from "./components/Grid";
+import Stars from "./components/Stars";
+import Repulsive from "./components/Repulsive";
+import SceneManager from "./components/SceneManager";
+import ThreeEntryPoint from "./components/ThreeEntryPoint";
 
-const management =
-  ["the see", "the saw", "the kiss", "the blood", "the moon", "the cross", "the dog", "the sun",
-  "the fool", "the lick", "the heat", "the knock", "the roof", "the bleed", "the shot"]
+const management = [
+  "the see",
+  "the saw",
+  "the kiss",
+  "the blood",
+  "the moon",
+  "the cross",
+  "the dog",
+  "the sun",
+  "the fool",
+  "the lick",
+  "the heat",
+  "the knock",
+  "the roof",
+  "the bleed",
+  "the shot"
+];
 
 const songs = {
-  1 : {
-    "song" : "2009-ICHC",
-    "component" : <Grid />,
+  1: {
+    song: "2009-ICHC",
+    component: <Grid />
   },
-  2 : {
-    "song" : "Blue Waves",
-    "component" : <Stars />,
+  2: {
+    song: "Blue Waves",
+    component: <Stars />
   },
-  3 : {
-    "song" : "Queen of Wands",
-    "component" : <Box />,
+  3: {
+    song: "Queen of Wands",
+    component: <Box />
   },
-  4 : {
-    "song" : "Kikko",
-    "component" : <Stars />,
+  4: {
+    song: "Kikko",
+    component: <Stars />
   },
-  5 : {
-    "song" : "Sky Burial",
-    "component" : <Box />,
+  5: {
+    song: "Sky Burial",
+    component: <Box />
   },
-  6 : {
-    "song" : "T-Shirt",
-    "component" : <Stars />,
+  6: {
+    song: "T-Shirt",
+    component: <Stars />
   },
-  7 : {
-    "song" : "Stone Fruit",
-    "component" : <Box />,
+  7: {
+    song: "Stone Fruit",
+    component: <Box />
   },
-  8 : {
-    "song" : "Management",
-    "component" : <Stars />,
+  8: {
+    song: "Management",
+    component: <Stars />
   },
-  9 : {
-    "song" : "Candy",
-    "component" : <Box />,
+  9: {
+    song: "Candy",
+    component: <Box />
   },
-  10 : {
-    "song" : "Chosen Horse",
-    "component" : <Stars />,
+  10: {
+    song: "Chosen Horse",
+    component: <Stars />
   },
-  11 : {
-    "song" : "Clown Heart (Wooden)",
-    "component" : <Box />,
+  11: {
+    song: "Clown Heart (Wooden)",
+    component: <Box />
   },
-  12 : {
-    "song" : "Gumby's Demise",
-    "component" : <Stars />,
+  12: {
+    song: "Gumby's Demise",
+    component: <Stars />
   }
 };
 
-
-const App = (props) => {
+const App = props => {
   const [songNumber, setSongNumber] = useState(1);
 
   useEffect(() => {
     const bindEventListeners = () => {
       window.onresize = resizeCanvas();
       resizeCanvas();
-    }
+    };
 
     const resizeCanvas = () => {
-      canvas.style.width = '100%';
-      canvas.style.height= '100%';
+      canvas.style.width = "100%";
+      canvas.style.height = "100%";
 
-      canvas.width  = canvas.offsetWidth;
+      canvas.width = canvas.offsetWidth;
       canvas.height = canvas.offsetHeight;
 
       sceneManager.onWindowResize();
-    }
+    };
 
     const render = () => {
       requestAnimationFrame(render);
       sceneManager.update();
-    }
+    };
 
     const canvas = document.getElementById("canvas");
     const sceneManager = new SceneManager(canvas);
     bindEventListeners();
     render();
-  })
+  });
 
   return (
     <div id="app" className="App c-black fz30 lh1 oh h100vh w100vw">
-      { /* <Environment>
-       	{songs[songNumber].component}
-      </Environment> */ }
-      <canvas id="canvas"></canvas>
+      {/* <Environment>
+        {songs[songNumber].component}
+      </Environment> */}
+      <canvas id="canvas" />
       <audio id="audio" className="dn">
         <source src="audio/08_Management.wav" type="audio/wav" />
       </audio>
@@ -124,11 +137,10 @@ const App = (props) => {
         </animated.div>
       </div>
       <animated.div className="dn c-black fz100 posa t0 l0">
-        {management && management.map((m, key) => (
-          <animated.span key={key}>
-            { m + ' ' }
-          </animated.span>
-        ))}
+        {management &&
+          management.map((m, key) => (
+            <animated.span key={key}>{m + " "}</animated.span>
+          ))}
       </animated.div>
       <Footer
         className="dn"
@@ -138,6 +150,6 @@ const App = (props) => {
       />
     </div>
   );
-}
+};
 
 export default App;
