@@ -1,35 +1,37 @@
 {
-  "name": "beneficials2",
-  "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "atomic-scss": "^2.1.2",
-    "dat.gui": "^0.7.6",
-    "gulp": "^3.9.1",
-    "gulp-babel": "^7.0.1",
-    "gulp-sass": "^4.0.2",
-    "react": "^16.8.6",
-    "react-dom": "^16.8.6",
-    "react-scripts": "2.1.8",
-    "react-spring": "8.0.19",
-    "react-three-fiber": "2.0.0",
-    "three": "0.103.0",
-    "three-full": "^17.1.0",
-    "three.meshline": "1.2.0"
-  },
-  "scripts": {
-    "start": "PORT=8080 react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
-  },
-  "eslintConfig": {
-    "extends": "react-app"
-  },
-  "browserslist": [
-    ">0.2%",
-    "not dead",
-    "not ie <= 11",
-    "not op_mini all"
-  ]
+	"name": "beneficials2",
+	"version": "0.1.0",
+	"private": true,
+	"dependencies": {
+		"atomic-scss": "^2.1.2",
+		"dat.gui": "^0.7.6",
+		"gulp": "^3.9.1",
+		"gulp-babel": "^7.0.1",
+		"gulp-sass": "^4.0.2",
+		"react": "^16.8.6",
+		"react-dom": "^16.8.6",
+		"react-scripts": "2.1.8",
+		"react-spring": "8.0.19",
+		"react-three-fiber": "2.0.0",
+		"three": "0.103.0",
+		"three-full": "^17.1.0",
+		"three.meshline": "1.2.0",
+		"load-json-file": "*"
+	},
+	"scripts": {
+		"start": "PORT=8080 react-scripts start",
+		"build": "react-scripts build",
+		"test": "react-scripts test",
+		"eject": "react-scripts eject"
+	},
+	"eslintConfig": {
+		"extends": "react-app"
+	},
+	"browserslist": [
+		">0.2%",
+		"not dead",
+		"not ie <= 11",
+		"not op_mini all"
+	],
+	"devDependencies": {}
 }
