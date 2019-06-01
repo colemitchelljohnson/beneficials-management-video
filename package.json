@@ -4,10 +4,12 @@
 	"private": true,
 	"dependencies": {
 		"atomic-scss": "^2.1.2",
+		"ccapture.js": "^1.1.0",
 		"dat.gui": "^0.7.6",
 		"gulp": "^3.9.1",
 		"gulp-babel": "^7.0.1",
 		"gulp-sass": "^4.0.2",
+		"load-json-file": "*",
 		"react": "^16.8.6",
 		"react-dom": "^16.8.6",
 		"react-scripts": "2.1.8",
@@ -15,8 +17,7 @@
 		"react-three-fiber": "2.0.0",
 		"three": "0.103.0",
 		"three-full": "^17.1.0",
-		"three.meshline": "1.2.0",
-		"load-json-file": "*"
+		"three.meshline": "1.2.0"
 	},
 	"scripts": {
 		"start": "PORT=8080 react-scripts start",

@@ -79,9 +79,9 @@ const songs = {
 		component: <Stars />
 	}
 };
-
 const App = props => {
 	const [songNumber, setSongNumber] = useState(1);
+	const [loomisLoaded, setLoomisLoaded] = useState(false);
 
 	useEffect(() => {
 		const bindEventListeners = () => {
@@ -105,9 +105,12 @@ const App = props => {
 		};
 
 		const canvas = document.getElementById("canvas");
-		const sceneManager = new SceneManager(canvas);
-		bindEventListeners();
-		render();
+		let sceneManager;
+		if (loomisLoaded) {
+			sceneManager = new SceneManager(canvas);
+			bindEventListeners();
+			render();
+		}
 	});
 
 	return (
@@ -117,7 +120,11 @@ const App = props => {
       </Environment> */}
 			<canvas id="canvas" />
 			<Squiggly className="dn" />
-			<Loomis className="dn" />
+			<Loomis
+				loomisLoaded={loomisLoaded}
+				setLoomisLoaded={setLoomisLoaded}
+				className="dn"
+			/>
 			<audio id="audio" className="dn">
 				<source src="audio/08_Management.wav" type="audio/wav" />
 			</audio>

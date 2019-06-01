@@ -20,10 +20,11 @@ const EffectComposer = window.THREE.EffectComposer;
 const AfterimagePass = window.THREE.AfterimagePass;
 const RenderPass = window.THREE.RenderPass;
 const JSONLoader = window.THREE.LegacyJSONLoader;
+let useTime;
 
 const animateSquiggly = () => {
 	let squigglyAnimationElements = document.querySelectorAll(".hasAnimation");
-	console.log("squiggly animation elements", squigglyAnimationElements.length);
+	// console.log("squiggly animation elements", squigglyAnimationElements.length);
 	for (let i = 0; i < squigglyAnimationElements.length; i++) {
 		squigglyAnimationElements[i].emit("squigglyAnimation");
 	}
@@ -31,7 +32,6 @@ const animateSquiggly = () => {
 
 const SceneManager = canvas => {
 	const clock = new THREE.Clock();
-
 	const screenDimensions = {
 		width: canvas.width,
 		height: canvas.height
@@ -180,14 +180,14 @@ const SceneManager = canvas => {
 					diamondsGroup.add(diamond);
 				}
 				// diamondsGroup.position.z = 70;
-				console.log("hey", camera.position, diamondsGroup.position);
+				// console.log("hey", camera.position, diamondsGroup.position);
 				scene.add(diamondsGroup);
 			});
 		}
 		// END DIAMONDS
 
-		var headOBJLoader = new OBJLoader().setPath("./models/head_001/");
-		var damaGLTFLoader = new GLTFLoader().setPath("./models/dama_de_elche/");
+		// var headOBJLoader = new OBJLoader().setPath("./models/head_001/");
+		// var damaGLTFLoader = new GLTFLoader().setPath("./models/dama_de_elche/");
 		// create image textures
 		const tornCloudTexture = new THREE.TextureLoader().load(
 			"images/IMG_5412.PNG"
@@ -199,6 +199,9 @@ const SceneManager = canvas => {
 			"images/checkers2.jpg"
 		);
 		const roseTexture = new THREE.TextureLoader().load("images/rose1.jpg");
+		const roseLoopTexture = new THREE.TextureLoader().load(
+			"images/rose1crop.jpg"
+		);
 		const peggyTexture = new THREE.TextureLoader().load("images/peggy.jpg");
 		const coreyTexture = new THREE.TextureLoader().load("images/corey.jpg");
 		const grassTexture = new THREE.TextureLoader().load(
@@ -215,7 +218,7 @@ const SceneManager = canvas => {
 		video.play();
 
 		const audio = document.getElementById("audio");
-		audio.play();
+		audio && audio.play();
 
 		const documentTime = document.getElementById("time");
 
@@ -228,6 +231,9 @@ const SceneManager = canvas => {
 			map: checkersTexture
 		});
 		const roseMaterial = new THREE.MeshBasicMaterial({ map: roseTexture });
+		const roseLoopMaterial = new THREE.MeshBasicMaterial({
+			map: roseLoopTexture
+		});
 		const videoMaterial = new THREE.MeshBasicMaterial({
 			map: videoTexture
 		});
@@ -256,15 +262,15 @@ const SceneManager = canvas => {
 			params.closed
 		);
 		const tubeMaterial = new THREE.MeshLambertMaterial({ color: 0xff00ff });
-		const wireframeMaterial = new THREE.MeshBasicMaterial({
-			color: 0xff00ff,
-			opacity: 0.9,
-			wireframe: false,
-			transparent: false
-		});
+		// const wireframeMaterial = new THREE.MeshBasicMaterial({
+		// 	color: 0xff00ff,
+		// 	opacity: 0.9,
+		// 	wireframe: false,
+		// 	transparent: false
+		// });
 		splineMesh = new THREE.Mesh(tubeGeometry, videoMaterial);
 		const wireframe = new THREE.Mesh(tubeGeometry, videoMaterial);
-		splineMesh.add(wireframeMaterial);
+		// splineMesh.add(wireframeMaterial);
 		params.animationView && parent.add(splineMesh);
 		params.animationView &&
 			animateCameraAlongSpline(splineCamera, tubeGeometry, binormal, normal);
@@ -376,97 +382,86 @@ const SceneManager = canvas => {
 		function mapFrom3D(x, y, z) {
 			return x + y * xSize + z * xSize * ySize;
 		}
+		const timeMarker1 = 3;
+		const timeMarker2 = 7;
+		const timeMarker3 = 12;
+		const timeMarker4 = 20;
+		const timeMarker5 = 25;
+		const timeMarker6 = 36;
+		const timeMarker7 = 47;
+		const timeMarker8 = 53;
+		const timeMarker9 = 54;
+		const timeMarker10 = 68;
+		const timeMarker11 = 70;
+		const timeMarker01 = 80;
+		const timeMarker02 = 92;
+		const timeMarker03 = 100;
+		const timeMarker04 = 106;
+		const timeMarker05 = 118;
+		const timeMarker06 = 132;
+		const loudTimeMarker01 = 156;
+		const loudTimeMarker02 = 167;
+		const loudTimeMarker03 = 196;
+		const loudTimeMarker04Pre = 200;
+		const loudTimeMarker04 = 201;
+		const loudTimeMarker05 = 223;
 
 		this.update = function(time) {
-			// createDiamond();
-			let positions = [];
-			for (let i = 0; i < n; i++) {
-				let p = mapTo3D(i);
-				positions.push((p.x - xSize) / xSize);
-				positions.push((p.y - ySize) / ySize);
-				positions.push((p.z - zSize) / zSize);
-			}
-			let positionAttribute = new THREE.Float32BufferAttribute(positions, 3);
-			geometry.addAttribute("position", positionAttribute);
-			let indexPairs = [];
-			for (let i = 0; i < n; i++) {
-				let p = mapTo3D(i);
-				if (p.x + 1 < xSize) {
-					indexPairs.push(i);
-					indexPairs.push(mapFrom3D(p.x + 1, p, p.z));
-				}
-				if (p.y + 1 < ySize) {
-					indexPairs.push(i * scale3);
-					indexPairs.push(mapFrom3D(p.x, p.y + 1, p.z));
-				}
-				if (p.z + 1 < zSize) {
-					indexPairs.push(i);
-					indexPairs.push(mapFrom3D(p.x, p.y, p.z + 1));
-				}
-			}
-			geometry.setIndex(indexPairs);
-			let lines = new THREE.LineSegments(
-				geometry,
-				new THREE.LineBasicMaterial({ color: 0x85144b, linewidth: 100 })
+			console.log(
+				"camera",
+				camera.position,
+				"scene",
+				scene.position,
+				"group3",
+				group3.position,
+				"torus knot",
+				torusKnotGeometryMesh.position
 			);
 
 			if (params.animationView) {
 				parent.add(splineMesh);
 				scene.add(parent);
 				buildCamera(params.animationView, screenDimensions);
-				console.log(camera);
+				// console.log(camera);
 				animateCameraAlongSpline(splineCamera, tubeGeometry, binormal, normal);
+			} else {
+				// console.log(parent);
+				parent.remove(splineMesh);
+				parent.remove(splineCamera);
+				parent.remove(cameraEye);
 			}
 			// console.log('before', camera.position)
 			// console.log('after', camera.position)
 			// addNoise(peggySphereMesh, .03)
-			console.log(time);
-			const timeMarker1 = 3;
-			const timeMarker2 = 7;
-			const timeMarker3 = 12;
-			const timeMarker4 = 20;
-			const timeMarker5 = 25;
-			const timeMarker6 = 36;
-			const timeMarker7 = 47;
-			const timeMarker8 = 53;
-			const timeMarker9 = 54;
-			const timeMarker10 = 68;
-			const timeMarker11 = 70;
-			const timeMarker01 = 80;
-			const timeMarker02 = 92;
-			const timeMarker03 = 100;
-			const timeMarker04 = 106;
-			const timeMarker05 = 118;
-			const timeMarker06 = 132;
-			const loudTimeMarker01 = 156;
-			const loudTimeMarker02 = 167;
-			const loudTimeMarker03 = 196;
+			// console.log(time);
 
-			let useTime = time;
-			// let useTime = time;
+			// setthetime
+			useTime = time + loudTimeMarker02 - 5;
+			// useTime = time;
 			timeNotSet && (video.currentTime = useTime.toFixed(0));
 			timeNotSet && (audio.currentTime = useTime.toFixed(0));
 			timeNotSet = false;
 			documentTime.textContent = useTime.toFixed(0);
 			let scale = Math.sin(useTime / 2) * 20;
 			let scale3 = Math.sin(useTime / 3);
-			console.log(
-				"useTime",
-				useTime * 1000 + 3,
-				"performance.now",
-				performance.now(),
-				"scale",
-				scale,
-				"scale3",
-				scale3
-			);
+			// console.log(
+			// 	"useTime",
+			// 	useTime * 1000 + 3,
+			// 	"performance.now",
+			// 	performance.now(),
+			// 	"scale",
+			// 	scale,
+			// 	"scale3",
+			// 	scale3
+			// );
 
 			group.rotation.x = useTime * 4;
 			group.rotation.y = useTime;
 			// group2.rotation.x = performance.now() / 700;
 			// group2.rotation.y = performance.now() / 3000;
-			group2.rotation.x = (useTime * 1000 + 3) / 700;
-			group2.rotation.y = (useTime * 1000 + 3) / 3000;
+			let performanceNow = useTime * 1000 + 3;
+			group2.rotation.x = performanceNow / 700;
+			group2.rotation.y = performanceNow / 3000;
 
 			if (useTime > timeMarker2 && useTime < timeMarker3) {
 				group.add(whiteBoxGeometryMesh);
@@ -530,6 +525,7 @@ const SceneManager = canvas => {
 				group2.rotation.y = performance.now() / 1000;
 				group3.rotation.x = performance.now() / 1000;
 				group3.rotation.y = performance.now() / 1000;
+				group.remove(torusKnotGeometryMesh);
 				tornCloudKnotGeometryMesh.material = videoMaterial;
 				roseCylinderGeometryMesh.material = tornCloudMaterial;
 				// torusKnotGeometryMesh.scale.set(0);
@@ -546,8 +542,8 @@ const SceneManager = canvas => {
 				scene.add(group);
 				group.rotation.x = performance.now() / 2000;
 				group.rotation.y = performance.now() / 1000;
-				group.add(torusKnotGeometryMesh);
-				torusKnotGeometryMesh.scale.set(1, 1 * scale3, 1 * scale3, 1, 1);
+				// group.add(torusKnotGeometryMesh);
+				// torusKnotGeometryMesh.scale.set(1, 1 * scale3, 1 * scale3, 1, 1);
 				camera.position.z = 25;
 				camera.position.x = 0;
 				camera.position.y = 0;
@@ -662,12 +658,12 @@ const SceneManager = canvas => {
 			}
 			// drop 100
 			if (useTime > timeMarker03 && useTime < timeMarker04) {
-				resetGroup([group3]);
+				// resetGroup([group3]);
 				group2.add(peggySphereMesh);
 				addNoise(peggySphereMesh, 20 * scale3, 100);
-				group3.position.x = 0;
-				group3.position.y = 0;
-				group3.position.z = 0;
+				// group3.position.x = 0;
+				// group3.position.y = 0;
+				// group3.position.z = 0;
 				// torusKnotGeometryMesh.scale.set(1, 5, 10, 10, 1);
 				// torusKnotGeometryMesh.material = coreyMaterial;
 				// group3.add(torusKnotGeometryMesh);
@@ -700,7 +696,6 @@ const SceneManager = canvas => {
 					resetGroup([group, group2, group3]);
 					scene.background = new THREE.Color("#ffbacf");
 					params.animationView = true;
-					console.log("animation view", params.animationView);
 					// headGLTFLoader.load("scene.gltf", function(gltf) {
 					// 	gltf.scene.traverse(o => {
 					// 		if (o.isMesh) {
@@ -722,6 +717,9 @@ const SceneManager = canvas => {
 
 			// 156 loud
 			if (useTime > loudTimeMarker01 && useTime < loudTimeMarker02) {
+				resetScene(scene);
+				resetGroup([group, group2, group3]);
+				params.animationView = false;
 				let canvasDOM = document.getElementById("canvas");
 				canvasDOM.classList.add("dn");
 				let squigglyDOM = document.getElementById("squiggly");
@@ -735,15 +733,106 @@ const SceneManager = canvas => {
 				document.getElementById("ring__1").setAttribute("src", "#box-texture");
 			}
 
-			// 168 second loud
+			// 167 second loud
 			if (useTime > loudTimeMarker02 && useTime < loudTimeMarker03) {
+				// resetScene(scene);
+				// resetGroup([group, group2, group3]);
+				params.animationView = false;
 				document.getElementById("sky__1").setAttribute("src", "#box-texture");
 			}
 
-			// 195
-			if (useTime > loudTimeMarker03) {
+			// 196
+			if (useTime > loudTimeMarker03 && useTime < loudTimeMarker04) {
+				scene.background = new THREE.Color("#ffbacf");
+				params.animationView = false;
+
+				let canvasDOM = document.getElementById("canvas");
+				canvasDOM.classList.remove("dn");
+				let squigglyDOM = document.getElementById("squiggly");
+				squigglyDOM.classList.add("dn");
+				scene.add(group3);
+				group3.add(torusKnotGeometryMesh);
+				torusKnotGeometryMesh.material = roseMaterial;
+				scene.position.x = 0;
+				scene.position.y = -2;
+				scene.position.z = -50;
+				camera.position.x = 0;
+				camera.position.y = 1.6;
+				camera.position.z = 0;
+
+				// group3.rotation.x = scale3 * 4;
+				group3.position.x = 0;
+				group3.position.y = -2;
+				group3.position.z = -30;
+				group3.scale.multiplyScalar(1.0025);
+				group3.rotation.x = 0;
+				group3.rotation.y = 0;
+				group3.rotation.z = scale3;
+
+				// params.animationView = false;
+				// console.log("animation view", params.animationView);
+				// group.add(torusKnotGeometryMesh);
+				// scene.add(group);
+				// let canvasDOM = document.getElementById("canvas");
+				// canvasDOM.classList.remove("dn");
+				// document.getElementById("squiggly").classList.add("dn");
+				// scene.position.z = 50;
+				// camera.position.z = 75;
+				// if (count === false && !headMesh) {
+				// 	console.log("camera", camera.position, "scene", scene.position);
+				// 	scene.background = new THREE.Color("#e5b9ba");
+				// 	headOBJLoader.load(
+				// 		"HEAD_001.obj",
+				// 		function(object) {
+				// 			console.log("obj", object);
+				// 			// For any meshes in the model, add our material.
+				// 			object.traverse(function(node) {
+				// 				// if (node.isMesh) node.material = grassMaterial;
+				// 				if (node.isMesh) node.material = roseLoopMaterial;
+				// 			});
+				// 			headMesh = object;
+				// 			scene.add(headMesh);
+				// 			console.log("headMesh Object", headMesh);
+				// 		},
+				// 		// called when loading is in progresses
+				// 		function(xhr) {
+				// 			console.log(
+				// 				"headMesh",
+				// 				(xhr.loaded / xhr.total) * 100 + "% loaded"
+				// 			);
+				// 		}, // called when loading has errors
+				// 		function(error) {
+				// 			console.log("headMesh", "An error happened");
+				// 		}
+				// 	);
+				// 	count = true;
+				// }
+				// if (headMesh) {
+				// 	headMesh.rotation.x = scale / 30;
+				// 	headMesh.rotation.y = scale / 40;
+				// 	headMesh.rotation.z = scale / 50;
+				// 	// headMesh.position.x = scale / 2;
+				// 	// headMesh.position.y = scale / 2;
+				// 	// headMesh.position.x = scale3;
+				// 	// headMesh.position.y = scale3;
+				// 	// headMesh.position.z = (40 * scale3) / 2;
+				// 	addNoise(headMesh.children[0], useTime * 2, 20);
+				// }
+			}
+			if (useTime > loudTimeMarker04Pre && useTime < loudTimeMarker04) {
+				let canvasDOM = document.getElementById("canvas");
+				canvasDOM.classList.add("dn");
+			}
+			if (useTime > loudTimeMarker04 && useTime < loudTimeMarker05) {
 				document.getElementById("squiggly").classList.add("dn");
-				document.getElementById("loomis").classList.remove("dn");
+				let loomisDOM = document.getElementById("loomis");
+				loomisDOM.classList.remove("dn");
+			}
+			if (useTime > loudTimeMarker05) {
+				let canvasDOM = document.getElementById("canvas");
+				canvasDOM.classList.remove("dn");
+				let loomisDOM = document.getElementById("loomis");
+				loomisDOM.classList.add("dn");
 			}
 		};
 	}
@@ -892,15 +981,32 @@ const SceneManager = canvas => {
 		var k = 9;
 		// var time = performance.now() * 0.01;
 		var time = performance.now() * 0.001;
-		for (var i = 0; i < mesh.geometry.vertices.length; i++) {
-			var p = mesh.geometry.vertices[i];
+		for (
+			var i = 0;
+			mesh.geometry.vertices
+				? i < mesh.geometry.vertices.length
+				: i < mesh.geometry.attributes.normal.count;
+			i++
+		) {
+			var p = mesh.geometry.vertices
+				? mesh.geometry.vertices[i]
+				: mesh.geometry.attributes.normal.array[i];
 			// p.normalize().multiplyScalar(1 + .03 * Perlin.noise.perlin3(p.x * k + time, p.y * k, p.z * k));
-			p.normalize().multiplyScalar(
-				1 +
-					scale *
-						multiple *
-						Perlin.noise.perlin3(p.x * k + time, p.y * k, p.z * k)
-			);
+			mesh.geometry.vertices
+				? p
+						.normalize()
+						.multiplyScalar(
+							1 +
+								scale *
+									multiple *
+									Perlin.noise.perlin3(p.x * k + time, p.y * k, p.z * k)
+						)
+				: (p =
+						p *
+						(1 +
+							scale *
+								multiple *
+								Perlin.noise.perlin3(p.x * k + time, p.y * k, p.z * k)));
 		}
 		mesh.geometry.verticesNeedUpdate = true;
 		mesh.geometry.computeVertexNormals();
@@ -996,8 +1102,8 @@ const SceneManager = canvas => {
 		var time = Date.now();
 		var looptime = 20 * 1000;
 		var t = (time % looptime) / looptime;
-		console.log(t);
-		console.log("tubegeometry", tubeGeometry);
+		// console.log(t);
+		// console.log("tubegeometry", tubeGeometry);
 		var pos = tubeGeometry.parameters.path.getPointAt(t);
 		pos.multiplyScalar(params.scale);
 		// interpolation
@@ -1015,7 +1121,7 @@ const SceneManager = canvas => {
 		normal.copy(binormal).cross(dir);
 		// we move on a offset on its binormal
 		pos.add(normal.clone().multiplyScalar(offset));
-		console.log(pos);
+		// console.log(pos);
 		splineCamera.position.copy(pos);
 		cameraEye.position.copy(pos);
 		// using arclength for stablization in look ahead
@@ -1041,10 +1147,9 @@ const SceneManager = canvas => {
 
 		return sceneSubjects;
 	}
-
+	let saved = false;
 	function update() {
 		const elapsedTime = clock.getElapsedTime();
-
 		for (let i = 0; i < sceneSubjects.length; i++)
 			sceneSubjects[i].update(elapsedTime);
 
