@@ -218,7 +218,7 @@ const SceneManager = canvas => {
 		video.play();
 
 		const audio = document.getElementById("audio");
-		audio && audio.play();
+		// audio && audio.play();
 
 		const documentTime = document.getElementById("time");
 
@@ -404,7 +404,8 @@ const SceneManager = canvas => {
 		const loudTimeMarker03 = 196;
 		const loudTimeMarker04Pre = 200;
 		const loudTimeMarker04 = 201;
-		const loudTimeMarker05 = 223;
+		const loudTimeMarker05 = 221;
+		const loudTimeMarker06 = 235;
 
 		this.update = function(time) {
 			console.log(
@@ -436,8 +437,8 @@ const SceneManager = canvas => {
 			// console.log(time);
 
 			// setthetime
-			useTime = time + loudTimeMarker02 - 5;
-			// useTime = time;
+			// useTime = time + loudTimeMarker05 - 5;
+			useTime = time;
 			timeNotSet && (video.currentTime = useTime.toFixed(0));
 			timeNotSet && (audio.currentTime = useTime.toFixed(0));
 			timeNotSet = false;
@@ -828,11 +829,32 @@ const SceneManager = canvas => {
 				let loomisDOM = document.getElementById("loomis");
 				loomisDOM.classList.remove("dn");
 			}
-			if (useTime > loudTimeMarker05) {
+			if (useTime > loudTimeMarker05 && useTime < loudTimeMarker06) {
+				scene.background = new THREE.Color("#ffffff");
+				resetScene(scene);
+				resetGroup([group, group2, group3]);
 				let canvasDOM = document.getElementById("canvas");
 				canvasDOM.classList.remove("dn");
 				let loomisDOM = document.getElementById("loomis");
 				loomisDOM.classList.add("dn");
+				let capitalDOM = document.getElementById("capital");
+				capitalDOM.classList.remove("dn");
+			}
+			if (useTime > loudTimeMarker06 && useTime < 246) {
+				let tornCloudCylinderDOM = document.getElementById(
+					"torn-cloud-cylinder"
+				);
+				tornCloudCylinderDOM.setAttribute("animation__rotation", {
+					property: "rotation",
+					to: "360 360 -50",
+					loop: true,
+					dur: 10000,
+					easing: "easeInElastic"
+				});
+			}
+			if (useTime > 245) {
+				let capitalDOM = document.getElementById("capital");
+				capitalDOM.classList.add("dn");
 			}
 		};
 	}

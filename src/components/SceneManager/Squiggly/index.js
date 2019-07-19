@@ -2,7 +2,7 @@ import React from "react";
 
 const Squiggly = ({ className }) => (
 	<div id="squiggly" className={className}>
-		<a-scene stats vr-mode-ui="enabled: false">
+		<a-scene vr-mode-ui="enabled: false">
 			<a-assets>
 				<img id="box-texture" src="./images/terror.jpeg" />
 				<img id="album-texture" src="./images/album-art-grass.jpg" />

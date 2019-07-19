@@ -10,6 +10,7 @@ import SceneManager from "./components/SceneManager";
 import ThreeEntryPoint from "./components/ThreeEntryPoint";
 import Loomis from "./components/SceneManager/Loomis";
 import Squiggly from "./components/SceneManager/Squiggly";
+import Capital from "./components/SceneManager/Capital";
 
 const management = [
 	"the see",
@@ -125,6 +126,7 @@ const App = props => {
 				setLoomisLoaded={setLoomisLoaded}
 				className="dn"
 			/>
+			<Capital className="dn" />
 			<audio id="audio" className="dn">
 				<source src="audio/08_Management.wav" type="audio/wav" />
 			</audio>

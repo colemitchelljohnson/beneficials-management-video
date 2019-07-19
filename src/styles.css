@@ -17586,11 +17586,14 @@ section.site {
 
 html,
 body {
-  font-family: Helvetica, sans-serif;
+  font-family: Helvetica, Helvetica, sans-serif;
   font-style: normal;
   font-weight: 300;
-  font-size: 16px;
+  font-size: 24px;
   color: #2A2AFF; }
+
+h1 {
+  font-size: 24px; }
 
 /**
  * (optional) define here the style definitions which should be applied on the slider container
