@@ -15,7 +15,7 @@
 		"react-scripts": "2.1.8",
 		"react-spring": "8.0.19",
 		"react-three-fiber": "2.0.0",
-		"three": "0.103.0",
+		"three": "0.125.0",
 		"three-full": "^17.1.0",
 		"three.meshline": "1.2.0"
 	},
